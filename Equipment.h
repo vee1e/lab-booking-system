@@ -21,6 +21,12 @@ protected:
     Equipment(const std::string& n, const std::string& b)
         : id(nextId++), name(n), brand(b), available(true), timesBorrowed(0) {}
 
+    // Shared tail for child lines: state + borrow counter.
+    std::string suffix() const {
+        return std::string(isAvailable() ? "FREE" : "TAKEN") +
+               " borrowed=" + std::to_string(timesBorrowed) + "x";
+    }
+
 public:
     // Virtual end: children clean up safely via base pointer.
     virtual ~Equipment() {}
@@ -39,9 +45,6 @@ public:
     // Pure virtual: each child must define its own.
     virtual std::string getType() const = 0;
     virtual std::string detailLine() const = 0;
-
-    // One print path for all gear.
-    void showDetails() const { std::cout << detailLine() << "\n"; }
 
     // Operator overload: print with << .
     friend std::ostream& operator<<(std::ostream& os, const Equipment& e) {
@@ -66,9 +69,7 @@ public:
     std::string getType() const override { return "Microscope"; }
     std::string detailLine() const override {
         return "[" + std::to_string(getId()) + "] " + getName() + " (Microscope) brand=" + getBrand() +
-               " mag=" + std::to_string(magnification) + "x " +
-               (isAvailable() ? "FREE" : "TAKEN") +
-               " borrowed=" + std::to_string(getTimesBorrowed()) + "x";
+               " mag=" + std::to_string(magnification) + "x " + suffix();
     }
 };
 
@@ -86,9 +87,7 @@ public:
     std::string getType() const override { return "Centrifuge"; }
     std::string detailLine() const override {
         return "[" + std::to_string(getId()) + "] " + getName() + " (Centrifuge) brand=" + getBrand() +
-               " max=" + std::to_string(maxRpm) + "rpm " +
-               (isAvailable() ? "FREE" : "TAKEN") +
-               " borrowed=" + std::to_string(getTimesBorrowed()) + "x";
+               " max=" + std::to_string(maxRpm) + "rpm " + suffix();
     }
 };
 
@@ -106,8 +105,6 @@ public:
     std::string getType() const override { return "Spectrometer"; }
     std::string detailLine() const override {
         return "[" + std::to_string(getId()) + "] " + getName() + " (Spectrometer) brand=" + getBrand() +
-               " range=" + std::to_string(maxNm) + "nm " +
-               (isAvailable() ? "FREE" : "TAKEN") +
-               " borrowed=" + std::to_string(getTimesBorrowed()) + "x";
+               " range=" + std::to_string(maxNm) + "nm " + suffix();
     }
 };

@@ -1,6 +1,6 @@
 #pragma once
 // Booking: links one user to one item by ids.
-// Shows: encapsulation, constructor overload, operator overload.
+// Shows: encapsulation, open state via sentinel, operator overload.
 #include <iostream>
 #include <string>
 
@@ -12,8 +12,7 @@ private:
     int userId;       // user tag
     int issueDay;     // borrow day
     int dueDay;       // last free day
-    int returnDay;    // -1 = not back
-    bool returned;    // open or shut
+    int returnDay;    // -1 = still out
     int fine;         // money due on late return
     static int nextBookingId;  // shared counter
 
@@ -22,19 +21,18 @@ public:
     Booking(int eqId, int uId, int today, int loanDays)
         : bookingId(nextBookingId++), equipmentId(eqId), userId(uId),
           issueDay(today), dueDay(today + loanDays),
-          returnDay(-1), returned(false), fine(0) {}
+          returnDay(-1), fine(0) {}
 
     // Read face.
     int getId() const { return bookingId; }
     int getEquipmentId() const { return equipmentId; }
     int getUserId() const { return userId; }
     int getDueDay() const { return dueDay; }
-    bool isReturned() const { return returned; }
+    bool isReturned() const { return returnDay != -1; }
     int getFine() const { return fine; }
 
     // Close: mark back, work out fine if late.
     void close(int today, int finePerDay) {
-        returned = true;
         returnDay = today;
         if (today > dueDay) fine = (today - dueDay) * finePerDay;
     }
@@ -46,11 +44,10 @@ public:
                         " user=" + std::to_string(userId) +
                         " issue=" + std::to_string(issueDay) +
                         " due=" + std::to_string(dueDay);
-        if (returned) s += " back=" + std::to_string(returnDay) + " fine=" + std::to_string(fine);
+        if (returnDay != -1) s += " back=" + std::to_string(returnDay) + " fine=" + std::to_string(fine);
         else s += " OPEN";
         return s;
     }
-    void show() const { std::cout << line() << "\n"; }
 
     // Operator overload: print with << .
     friend std::ostream& operator<<(std::ostream& os, const Booking& b) {

@@ -28,14 +28,11 @@ public:
     virtual int getMaxItems() const = 0;
     virtual int getLoanDays() const = 0;
     virtual int getFinePerDay() const = 0;
-    // Year tag for display: staff return 0.
-    virtual int getYear() const { return 0; }
 
     // Verbose line for lists.
     virtual std::string line() const {
         return "[" + std::to_string(userId) + "] " + name + " (" + getRole() + ")";
     }
-    void show() const { std::cout << line() << "\n"; }
 
     // Operator overload: print user with << .
     friend std::ostream& operator<<(std::ostream& os, const User& u) {
@@ -60,7 +57,6 @@ public:
     }
 
     std::string getRole() const override { return "Student"; }
-    int getYear() const override { return studyYear; }
     // Year rule: year1=2 items, year2=3, year3=4.
     int getMaxItems() const override { return 1 + studyYear; }
     int getLoanDays() const override { return 7; }

@@ -18,10 +18,9 @@ private:
 
     // Private helper: count open borrows for a user.
     int openCount(int userId) const {
-        int c = 0;
-        for (auto& b : logs)
-            if (b.getUserId() == userId && !b.isReturned()) c++;
-        return c;
+        return std::count_if(logs.begin(), logs.end(), [userId](const Booking& b) {
+            return b.getUserId() == userId && !b.isReturned();
+        });
     }
 
     // Private helper: who holds a taken item, for verbose msg.
@@ -117,20 +116,26 @@ public:
                        " + gear " + std::to_string(eqId) + ". Check menu 8 for open logs."};
     }
 
+    // Shared list shape: header with count, empty note, one line each.
+    template <typename T, typename F>
+    static void printList(const char* title, const std::vector<T>& items, const char* emptyMsg, F text) {
+        std::cout << "--- " << title << " (" << items.size() << ") ---\n";
+        if (items.empty()) { std::cout << emptyMsg << "\n"; return; }
+        for (const auto& it : items) std::cout << text(it) << "\n";
+    }
+
     // Lists: always print header + count.
     void listEquipment() const {
-        std::cout << "--- gear list (" << stock.size() << ") ---\n";
-        if (stock.empty()) { std::cout << "Empty. Admin can add via menu 9.\n"; return; }
-        for (auto* e : stock) std::cout << *e << "\n";
+        printList("gear list", stock, "Empty. Admin can add via menu 9.",
+                  [](Equipment* e) { return e->detailLine(); });
     }
     void listUsers() const {
-        std::cout << "--- user list (" << users.size() << ") ---\n";
-        for (auto* u : users) std::cout << *u << "\n";
+        printList("user list", users, "Empty. Nothing to show.",
+                  [](User* u) { return u->line(); });
     }
     void listBookings() const {
-        std::cout << "--- booking log (" << logs.size() << ") ---\n";
-        if (logs.empty()) { std::cout << "No bookings yet. Borrow via menu 3.\n"; return; }
-        for (auto& b : logs) std::cout << b << "\n";
+        printList("booking log", logs, "No bookings yet. Borrow via menu 3.",
+                  [](const Booking& b) { return b.line(); });
     }
 
     // Search overload 1: by word in name or type.
