@@ -1,0 +1,64 @@
+#pragma once
+// Booking: links one user to one item by ids.
+// Shows: encapsulation, constructor overload, operator overload.
+#include <iostream>
+#include <string>
+
+class Booking {
+private:
+    // Private: set once, closed once, never edited raw.
+    int bookingId;    // tag like 5001
+    int equipmentId;  // gear tag
+    int userId;       // user tag
+    int issueDay;     // borrow day
+    int dueDay;       // last free day
+    int returnDay;    // -1 = not back
+    bool returned;    // open or shut
+    int fine;         // money due on late return
+    static int nextBookingId;  // shared counter
+
+public:
+    // Constructor overload 1: full loan span given.
+    Booking(int eqId, int uId, int today, int loanDays)
+        : bookingId(nextBookingId++), equipmentId(eqId), userId(uId),
+          issueDay(today), dueDay(today + loanDays),
+          returnDay(-1), returned(false), fine(0) {}
+    // Constructor overload 2: default 7 day loan.
+    Booking(int eqId, int uId, int today)
+        : Booking(eqId, uId, today, 7) {}
+
+    // Read face.
+    int getId() const { return bookingId; }
+    int getEquipmentId() const { return equipmentId; }
+    int getUserId() const { return userId; }
+    int getDueDay() const { return dueDay; }
+    bool isReturned() const { return returned; }
+    int getFine() const { return fine; }
+
+    // Close: mark back, work out fine if late.
+    void close(int today, int finePerDay) {
+        returned = true;
+        returnDay = today;
+        if (today > dueDay) fine = (today - dueDay) * finePerDay;
+    }
+
+    // Verbose line for logs.
+    std::string line() const {
+        std::string s = "B" + std::to_string(bookingId) +
+                        " gear=" + std::to_string(equipmentId) +
+                        " user=" + std::to_string(userId) +
+                        " issue=" + std::to_string(issueDay) +
+                        " due=" + std::to_string(dueDay);
+        if (returned) s += " back=" + std::to_string(returnDay) + " fine=" + std::to_string(fine);
+        else s += " OPEN";
+        return s;
+    }
+    void show() const { std::cout << line() << "\n"; }
+
+    // Operator overloads: print and compare by id.
+    friend std::ostream& operator<<(std::ostream& os, const Booking& b) {
+        os << b.line();
+        return os;
+    }
+    bool operator==(const Booking& o) const { return bookingId == o.bookingId; }
+};
