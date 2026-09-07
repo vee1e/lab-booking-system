@@ -43,9 +43,6 @@ public:
     // One print path for all gear.
     void showDetails() const { std::cout << detailLine() << "\n"; }
 
-    // Operator overload: compare by id.
-    bool operator==(const Equipment& o) const { return id == o.id; }
-
     // Operator overload: print with << .
     friend std::ostream& operator<<(std::ostream& os, const Equipment& e) {
         os << e.detailLine();

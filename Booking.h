@@ -18,14 +18,11 @@ private:
     static int nextBookingId;  // shared counter
 
 public:
-    // Constructor overload 1: full loan span given.
+    // Single birth form: loan span always comes from the user role.
     Booking(int eqId, int uId, int today, int loanDays)
         : bookingId(nextBookingId++), equipmentId(eqId), userId(uId),
           issueDay(today), dueDay(today + loanDays),
           returnDay(-1), returned(false), fine(0) {}
-    // Constructor overload 2: default 7 day loan.
-    Booking(int eqId, int uId, int today)
-        : Booking(eqId, uId, today, 7) {}
 
     // Read face.
     int getId() const { return bookingId; }
@@ -55,10 +52,9 @@ public:
     }
     void show() const { std::cout << line() << "\n"; }
 
-    // Operator overloads: print and compare by id.
+    // Operator overload: print with << .
     friend std::ostream& operator<<(std::ostream& os, const Booking& b) {
         os << b.line();
         return os;
     }
-    bool operator==(const Booking& o) const { return bookingId == o.bookingId; }
 };

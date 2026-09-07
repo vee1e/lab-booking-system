@@ -43,10 +43,20 @@ public:
     void addUser(User* u) { users.push_back(u); }
 
     // Build gear from one spec pack (struct use).
+    // If value <= 0 the short birth form runs with default spec.
     Result addFromSpec(const GearSpec& s) {
-        if (s.kind == "microscope") addEquipment(new Microscope(s.name, s.brand, s.value));
-        else if (s.kind == "centrifuge") addEquipment(new Centrifuge(s.name, s.brand, s.value));
-        else if (s.kind == "spectrometer") addEquipment(new Spectrometer(s.name, s.brand, s.value));
+        if (s.kind == "microscope") {
+            if (s.value <= 0) addEquipment(new Microscope(s.name, s.brand));
+            else addEquipment(new Microscope(s.name, s.brand, s.value));
+        }
+        else if (s.kind == "centrifuge") {
+            if (s.value <= 0) addEquipment(new Centrifuge(s.name, s.brand));
+            else addEquipment(new Centrifuge(s.name, s.brand, s.value));
+        }
+        else if (s.kind == "spectrometer") {
+            if (s.value <= 0) addEquipment(new Spectrometer(s.name, s.brand));
+            else addEquipment(new Spectrometer(s.name, s.brand, s.value));
+        }
         else return {false, "FAIL: kind must be microscope, centrifuge, or spectrometer. Got '" + s.kind + "'."};
         return {true, "OK: added " + s.kind + " '" + s.name + "' brand '" + s.brand + "'."};
     }
@@ -141,7 +151,7 @@ public:
         std::cout << "--- search id " << id << " ---\n";
         Equipment* e = findEquipment(id);
         if (e) std::cout << *e << "\n";
-        else std::cout << "No gear with id " << id << ".\n";
+        else std::cout << "FAIL: no gear with id " << id << ". See menu 2 for live ids 101 and up.\n";
     }
 
     // Remove: only if free. Verbose result.
@@ -156,15 +166,16 @@ public:
                 return {true, "OK: removed id " + std::to_string(id) + " ('" + n + "')."};
             }
         }
-        return {false, "FAIL: no gear with id " + std::to_string(id) + "."};
+        return {false, "FAIL: no gear with id " + std::to_string(id) + ". See menu 2 for live ids."};
     }
 
     // Demo data: 3 gear + year 1,2,3 students + staff.
+    // Priyanshu uses the short Student birth (defaults to year 1).
     void seed() {
         addEquipment(new Microscope("Olympus CX23", "Olympus", 1000));
         addEquipment(new Centrifuge("Eppendorf 5424", "Eppendorf", 15000));
         addEquipment(new Spectrometer("UV-1800", "Shimadzu", 1100));
-        addUser(new Student("Priyanshu", 1));
+        addUser(new Student("Priyanshu"));
         addUser(new Student("Arjun-Y2", 2));
         addUser(new Student("Lakshit-Y3", 3));
         addUser(new Faculty("Gowda"));

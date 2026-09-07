@@ -72,7 +72,7 @@ int main() {
             User* u = sys.findUser(loginId);
             if (u) std::cout << "OK: logged in as " << *u << ". Loan " << u->getLoanDays()
                              << " days, max " << u->getMaxItems() << ".\n";
-            else { std::cout << "FAIL: no user " << loginId << ".\n"; loginId = -1; }
+            else { std::cout << "FAIL: no user with id " << loginId << ". Valid ids are in menu 8. Try 1 to 5 from the seed list.\n"; loginId = -1; }
             pause(); clearScreen(); continue;
         }
         // List gear.
@@ -117,7 +117,7 @@ int main() {
             s.kind = readLine("kind: ");
             s.name = readLine("name: ");
             s.brand = readLine("brand: ");
-            s.value = readInt("spec number (mag/rpm/nm): ");
+            s.value = readInt("spec number (mag/rpm/nm, 0 = default): ");
             Result r = sys.addFromSpec(s);
             std::cout << r.msg << "\n";
             pause(); clearScreen(); continue;
