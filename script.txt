@@ -1,0 +1,87 @@
+OOPS IA3 SCRIPT (10 MIN)
+8 slides, 2 per person. Times below.
+
+0:00-2:00  ANSH  (slides 1-2)
+
+"Good morning sir. We are Arjun, Priyanshu, Ansh and Lakshit. Our project is the Shared Laboratory Equipment Booking System.
+
+The lab shares its instruments between students and staff. Nothing records who has what. Two people can claim the same microscope for the same afternoon, and a late return leaves no trace.
+
+We built a console app that holds that record. You sign in, the list shows what is free, you borrow, and you return. Borrowing marks the item taken and sets a due day. Returning closes the record and charges for a delay.
+
+Four steps: sign in, see what is free, borrow, return. The role decides the limits, so a first year student and the lab admin do not get the same quota.
+
+Every action prints one line that says what happened and why. If a borrow is refused, the line gives the reason instead of a bare error.
+
+Lakshit will explain how the classes are built."
+
+
+2:00-4:20  LAKSHIT  (slides 3-4)
+
+"Thank you. The code has two base classes.
+
+Equipment is the base for every instrument. It keeps the id, name, brand, whether it is free or taken, and how many times it was borrowed. Microscope, Centrifuge and Spectrometer inherit from it. Each adds only its own detail: magnification, top speed, range.
+
+User is the base for people. Student, Faculty and Lab Admin inherit from it. Each sets its own quota and loan length.
+
+This is one real object: id 101, Olympus CX23, a microscope at 1000x, marked free.
+
+BookingSystem is the manager. It holds three lists: items, people and records. A Booking stores a user id and an item id, not a pointer. If we delete an instrument, an old record cannot point at freed memory.
+
+All changes go through BookingSystem. The menu never touches the lists directly.
+
+Arjun will cover the OOP ideas and the rules."
+
+
+4:20-6:50  ARJUN  (slides 5-6)
+
+"Six ideas sit in the code, and each one does a job.
+
+Encapsulation: an instrument changes state only through borrow and return. Nothing outside can set it free by hand.
+
+Inheritance: two bases, six types. Shared fields are written once.
+
+Polymorphism: one list call prints every instrument in its own format. The list never checks the type.
+
+Abstraction: the base says what every item must do, not how.
+
+Overloading: search works by word and by id under one name. The constructors also come in two forms.
+
+Shared ids: each class counts its own records, so every new item, person and booking gets the next number.
+
+Now the rules. A first year student holds 2 items, second year 3, third year 4, faculty 5, lab admin 10. A student keeps an item for 7 days, faculty 14, admin 30. A late day costs 10 for a student, 5 for faculty, nothing for the admin.
+
+A borrow is refused in three cases: the item is already out, the person is at their limit, or an admin tries to remove an item that is still out.
+
+Priyanshu will show the states you see on screen."
+
+
+6:50-9:30  PRIYANSHU  (slides 7-8)
+
+"You see three states in the app.
+
+Free: the item is on the shelf, and anyone under their limit can take it.
+
+Taken: the app names the holder and refuses a second borrow of the same item.
+
+Late: the return is accepted, and the days late and the amount owed appear.
+
+If we run it live, this takes 40 seconds. Log in as user 1, borrow 101, try 101 again and let it refuse, move to day 9, return 101 and let the fine appear.
+
+Last, what it does not do. Nothing is saved, so the register resets when the program closes. Dates are counted by hand with a menu key. One person uses it at a time in a terminal.
+
+The next step is saving the register to a file and using real dates.
+
+The code is on GitHub, the link is on the slide. Thank you. We can take questions."
+
+
+IF SIR ASKS, WHO ANSWERS
+
+Ansh: why so much output, what the menu does.
+Lakshit: base classes, why ids instead of pointers, virtual destructor.
+Arjun: overloading vs overriding, why six types, the quota numbers.
+Priyanshu: no database, memory limits, what we would add next.
+
+Whoever is speaking answers. The other three stay quiet and do not correct them mid-sentence.
+
+Before class: check the laptop with the projector. Decide if Priyanshu runs it live or just talks through the three states. Live is stronger but eats the 30 second buffer.
