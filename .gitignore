@@ -1,3 +1,4 @@
 labbook
 *.o
 .DS_Store
+slides/png/

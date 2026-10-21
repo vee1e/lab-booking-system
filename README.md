@@ -9,6 +9,16 @@ g++ -std=c++17 -Wall main.cpp -o labbook
 ./labbook
 ```
 
+## Presentation
+
+`presentation.pdf` is the 8 slide deck for the IA3 demo. Source is in `slides/deck.html`. Rebuild with:
+
+```
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --headless --no-pdf-header-footer \
+  --print-to-pdf=slides/deck.pdf slides/deck.html
+```
+
 ## Files
 
 * `Equipment.h` - Equipment base plus Microscope, Centrifuge, Spectrometer

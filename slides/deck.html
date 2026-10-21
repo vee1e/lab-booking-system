@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Shared Laboratory Equipment Booking System</title>
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+
+  :root{
+    --paper:#EDF0EE;
+    --panel:#E4EAE7;
+    --ink:#16201E;
+    --soft:#4C5C58;
+    --line:#C2CDC8;
+    --teal:#0B6B62;
+    --amber:#A97517;
+    --magenta:#A31C4E;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{ background:var(--paper); }
+
+  body{
+    font-family:"Avenir Next","Avenir",sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .slide{
+    position:relative;
+    width:1280px; height:720px;
+    padding:56px 72px 64px 72px;
+    overflow:hidden;
+    page-break-after:always;
+    break-after:page;
+    background-color:var(--paper);
+    background-image:
+      linear-gradient(to right, rgba(22,32,30,.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(22,32,30,.045) 1px, transparent 1px);
+    background-size:40px 40px;
+  }
+  .slide:last-child{ page-break-after:auto; break-after:auto; }
+
+  /* calibration frame */
+  .slide::before{
+    content:"";
+    position:absolute; inset:22px;
+    border:1px solid var(--line);
+    pointer-events:none;
+  }
+  .slide::after{
+    content:"";
+    position:absolute; left:22px; top:22px;
+    width:9px; height:9px;
+    background:var(--teal);
+  }
+
+  /* specimen label header */
+  .tag{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:"American Typewriter",monospace;
+    font-size:11px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--soft);
+    border-bottom:1px solid var(--line);
+    padding-bottom:9px;
+    margin-bottom:44px;
+  }
+  .tag b{ color:var(--ink); font-weight:400; }
+
+  .foot{
+    position:absolute; left:72px; right:72px; bottom:30px;
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:"SF Mono",Menlo,monospace;
+    font-size:10px; letter-spacing:.1em; color:var(--soft);
+    text-transform:uppercase;
+  }
+
+  h1{
+    font-family:"Avenir Next Condensed","Avenir Next",sans-serif;
+    font-weight:700;
+    font-size:82px;
+    line-height:.93;
+    letter-spacing:-.015em;
+  }
+  h2{
+    font-family:"Avenir Next Condensed","Avenir Next",sans-serif;
+    font-weight:700;
+    font-size:46px;
+    line-height:1;
+    letter-spacing:-.01em;
+    margin-bottom:26px;
+  }
+  .eyebrow{
+    font-family:"American Typewriter",monospace;
+    font-size:12px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--teal); margin-bottom:18px;
+  }
+  .lede{ font-size:19px; line-height:1.5; color:var(--soft); max-width:640px; }
+  .mono{ font-family:"SF Mono",Menlo,monospace; white-space:nowrap; }
+
+  /* ---------- slide 1 ---------- */
+  .title-grid{
+    display:grid; grid-template-columns: 1fr 380px; gap:40px;
+    align-items:center; height:520px;
+  }
+  .team{
+    margin-top:34px;
+    display:grid; grid-template-columns:1fr 1fr; gap:6px 24px;
+    font-family:"American Typewriter",monospace;
+    font-size:14px; color:var(--soft); letter-spacing:.02em;
+  }
+  .team span::before{ content:"+ "; color:var(--teal); }
+
+  /* ---------- generic two column ---------- */
+  .cols{ display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; }
+
+  /* bottom note band */
+  .notes{
+    display:grid; grid-template-columns:1fr 1fr; gap:40px;
+    margin-top:auto; padding-top:18px; border-top:1px solid var(--line);
+  }
+  .notes div{ font-size:14px; line-height:1.5; color:var(--soft); }
+  .notes b{
+    display:block; font-family:"American Typewriter",monospace;
+    font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--teal); font-weight:400; margin-bottom:5px;
+  }
+
+  /* ---------- slide 2 ---------- */
+  .problem-list{ display:grid; gap:30px; margin-top:10px; }
+  .problem-list p{ font-size:21px; line-height:1.45; }
+  .problem-list span{
+    font-family:"SF Mono",Menlo,monospace; font-size:12px; color:var(--teal);
+    display:block; margin-bottom:6px; letter-spacing:.08em;
+  }
+  .answer{
+    background:var(--panel);
+    border-left:3px solid var(--teal);
+    padding:26px 28px;
+  }
+  .answer h3{
+    font-family:"Avenir Next Condensed",sans-serif;
+    font-size:26px; font-weight:700; margin-bottom:12px;
+  }
+  .answer p{ font-size:16px; line-height:1.55; color:var(--soft); }
+  .answer .files{
+    margin-top:20px; padding-top:14px; border-top:1px solid var(--line);
+    font-family:"SF Mono",Menlo,monospace; font-size:10.5px;
+    line-height:1.7; color:var(--soft); letter-spacing:.01em;
+  }
+
+  /* ---------- hierarchy ---------- */
+  .trees{ display:grid; grid-template-columns:1fr 1fr; gap:40px; }
+  .tree-label{
+    font-family:"American Typewriter",monospace;
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--soft); margin-bottom:14px;
+  }
+  .node{
+    border:1px solid var(--ink);
+    padding:12px 14px;
+    background:rgba(255,255,255,.55);
+  }
+  .node.base{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .node.base .sub{ color:rgba(237,240,238,.72); }
+  .node .nm{
+    font-family:"Avenir Next Condensed",sans-serif;
+    font-weight:700; font-size:20px; letter-spacing:.01em;
+  }
+  .node .sub{
+    font-family:"SF Mono",Menlo,monospace;
+    font-size:10.5px; line-height:1.55; color:var(--soft); margin-top:5px;
+  }
+  .children{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:26px; position:relative; }
+  .children::before{
+    content:""; position:absolute; left:6%; right:6%; top:-14px;
+    border-top:1px solid var(--ink);
+  }
+  .children .node{ position:relative; }
+  .children .node::before{
+    content:""; position:absolute; top:-14px; left:50%;
+    height:14px; border-left:1px solid var(--ink);
+  }
+  .children .nm{ font-size:15px; }
+  .children .sub{ font-size:10px; }
+  .stem{
+    height:14px; border-left:1px solid var(--ink); margin:0 auto; width:0;
+  }
+
+  /* ---------- relationships ---------- */
+  .rel-wrap{ display:grid; grid-template-columns:1fr 310px; gap:30px; align-items:start; }
+  .rel-wrap svg{ width:100%; height:auto; display:block; }
+  .chain{
+    font-family:"SF Mono",Menlo,monospace; font-size:11.5px; color:var(--soft);
+    margin-top:14px; padding-top:12px; border-top:1px solid var(--line);
+  }
+  .chain b{ color:var(--teal); font-weight:400; }
+  .legend{ font-size:14px; line-height:1.5; color:var(--soft); }
+  .legend dt{
+    font-family:"American Typewriter",monospace;
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink); margin-top:22px;
+  }
+  .legend dd{ margin-top:5px; font-size:14px; line-height:1.45; }
+
+  /* ---------- concept table ---------- */
+  table{ width:100%; border-collapse:collapse; }
+  th{
+    font-family:"American Typewriter",monospace;
+    font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--soft); font-weight:400; text-align:left;
+    border-bottom:1px solid var(--ink); padding:0 14px 9px 0;
+  }
+  td{
+    padding:13px 14px 13px 0;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+    font-size:15px; line-height:1.42;
+  }
+  td.c{
+    font-family:"Avenir Next Condensed",sans-serif;
+    font-weight:700; font-size:18px; width:170px;
+  }
+  td.w{ font-family:"SF Mono",Menlo,monospace; font-size:11px; color:var(--teal); width:240px; }
+
+  /* ---------- rules ---------- */
+  .rule-grid{ display:grid; grid-template-columns:1.15fr .85fr; gap:52px; align-items:start; }
+  .qtd{ font-family:"SF Mono",Menlo,monospace; font-size:12px; color:var(--soft); margin-top:26px; }
+  .qtd strong{ color:var(--ink); font-weight:500; }
+  .formula{
+    background:var(--ink); color:var(--paper);
+    padding:30px 28px;
+  }
+  .formula .lbl{
+    font-family:"American Typewriter",monospace; font-size:10.5px;
+    letter-spacing:.16em; text-transform:uppercase; color:rgba(237,240,238,.6);
+  }
+  .formula code{
+    display:block; margin-top:14px;
+    font-family:"SF Mono",Menlo,monospace; font-size:15px; line-height:1.7;
+  }
+  .fine-ex{ margin-top:22px; font-size:14px; line-height:1.55; color:rgba(237,240,238,.78); }
+
+  .blocked{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:26px; margin-top:34px; }
+  .blocked div{ border-top:1px solid var(--ink); padding-top:9px; }
+  .blocked b{
+    display:block; font-family:"American Typewriter",monospace;
+    font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--magenta); font-weight:400; margin-bottom:5px;
+  }
+  .blocked p{ font-size:14px; line-height:1.45; color:var(--soft); }
+
+  /* ---------- demo ---------- */
+  .steps{ display:grid; grid-template-columns:1fr 1fr; gap:10px 34px; margin-top:2px; }
+  .step{ display:grid; grid-template-columns:38px 1fr; gap:12px; align-items:start; }
+  .step .n{
+    font-family:"SF Mono",Menlo,monospace; font-size:11px;
+    color:var(--teal); padding-top:3px; letter-spacing:.08em;
+  }
+  .step p{ font-size:14.5px; line-height:1.4; }
+  .step .out{
+    font-family:"SF Mono",Menlo,monospace; font-size:10px;
+    color:var(--magenta); margin-top:3px; display:block;
+  }
+  .term{
+    margin-top:24px;
+    background:var(--ink); color:#E8EDEA;
+    padding:16px 22px;
+    font-family:"SF Mono",Menlo,monospace;
+    font-size:11px; line-height:1.65;
+  }
+  .term .ln{ display:grid; grid-template-columns:236px 1fr; }
+  .term .lone{ display:block; }
+  .term .c{ color:#8FA39D; }
+  .term .bad{ color:#E07A9C; }
+  .term .good{ color:#6FC0B0; }
+
+  /* ---------- run ---------- */
+  pre{
+    background:var(--ink); color:#E8EDEA;
+    font-family:"SF Mono",Menlo,monospace;
+    font-size:13px; line-height:1.75;
+    padding:22px 24px;
+  }
+  pre .c{ color:#8FA39D; }
+  .limits{ display:grid; gap:16px; }
+  .limits div{ border-top:1px solid var(--line); padding-top:10px; }
+  .limits dt{
+    font-family:"American Typewriter",monospace; font-size:10.5px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--teal);
+  }
+  .limits dd{ font-size:15px; line-height:1.45; margin-top:4px; color:var(--soft); }
+
+  .close{
+    margin-top:46px; padding-top:20px;
+    border-top:1px solid var(--ink);
+    display:flex; justify-content:space-between; align-items:flex-end;
+  }
+  .close-lbl{
+    font-family:"American Typewriter",monospace; font-size:10.5px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--soft);
+    margin-bottom:6px;
+  }
+  .close-url{
+    font-family:"SF Mono",Menlo,monospace;
+    font-size:23px; letter-spacing:-.01em; color:var(--teal);
+  }
+  .close-q{
+    font-family:"Avenir Next Condensed",sans-serif;
+    font-weight:700; font-size:40px; line-height:1;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ 1 ============ -->
+<section class="slide">
+  <div class="tag"><span><b>IA3</b> / OOPs in C++</span><span>22.10.2026</span></div>
+
+  <div class="title-grid">
+    <div>
+      <div class="eyebrow">Project</div>
+      <h1>Shared Laboratory<br>Equipment Booking<br>System</h1>
+      <div class="team">
+        <span>Arjun Tandon</span>
+        <span>Priyanshu Sharma</span>
+        <span>Ansh Jaiswal</span>
+        <span>Lakshit Verma</span>
+      </div>
+    </div>
+
+    <svg width="380" height="380" viewBox="0 0 380 380" aria-hidden="true">
+      <circle cx="190" cy="190" r="168" fill="none" stroke="#16201E" stroke-width="1"/>
+      <circle cx="190" cy="190" r="120" fill="none" stroke="#C2CDC8" stroke-width="1" stroke-dasharray="3 6"/>
+      <line x1="190" y1="6"   x2="190" y2="374" stroke="#16201E" stroke-width=".75" opacity=".35"/>
+      <line x1="6"   y1="190" x2="374" y2="190" stroke="#16201E" stroke-width=".75" opacity=".35"/>
+      <line x1="190" y1="190" x2="190" y2="150" stroke="#16201E" stroke-width="1"/>
+      <g font-family="SF Mono, Menlo, monospace" font-size="13" letter-spacing="3">
+        <text x="190" y="128" text-anchor="middle" fill="#0B6B62">FREE</text>
+        <text x="190" y="270" text-anchor="middle" fill="#A31C4E">TAKEN</text>
+      </g>
+      <g stroke="#16201E" stroke-width="1">
+        <line x1="185" y1="40" x2="195" y2="40"/>
+        <line x1="185" y1="340" x2="195" y2="340"/>
+        <line x1="40" y1="185" x2="40" y2="195"/>
+        <line x1="340" y1="185" x2="340" y2="195"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="foot"><span>Lab eq register / 8 slides</span><span>01</span></div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section class="slide">
+  <div class="tag"><span><b>Shared Laboratory Equipment</b> / problem</span><span>IA3</span></div>
+  <h2>Sharing instruments without a register.</h2>
+
+  <div class="cols">
+    <div class="problem-list">
+      <p><span>01 / CLAIM</span>Two students can book the same microscope for the same afternoon.</p>
+      <p><span>02 / TRACE</span>Once an instrument leaves the shelf, nobody can say who has it.</p>
+      <p><span>03 / COST</span>Late returns are remembered, not recorded, so no fine can be charged.</p>
+    </div>
+
+    <div class="answer">
+      <h3>One console app that holds the register.</h3>
+      <p>A C++17 build with no database. Gear, users and bookings live in memory, and every rule sits in one class. Borrowing an item marks it taken, returning it closes the record and prices the delay.</p>
+      <p style="margin-top:14px">Two hierarchies carry the data. One manager class enforces the rules.</p>
+      <p class="files">Equipment.h&nbsp; User.h&nbsp; Booking.h<br>BookingSystem.h&nbsp; Types.h&nbsp; main.cpp</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>Problem</span><span>02</span></div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="slide">
+  <div class="tag"><span><b>Class hierarchy</b> / one base, three children</span><span>Equipment.h · User.h</span></div>
+  <h2>Two trees, same shape.</h2>
+
+  <div class="trees">
+
+    <div>
+      <div class="tree-label">Equipment</div>
+      <div class="node base">
+        <div class="nm">Equipment</div>
+        <div class="sub">- id, name, brand, available, timesBorrowed<br>- static nextId<br>+ getType() = 0 &nbsp; + detailLine() = 0<br>+ markBorrowed() &nbsp; + markReturned()</div>
+      </div>
+      <div class="stem"></div>
+      <div class="children">
+        <div class="node">
+          <div class="nm">Microscope</div>
+          <div class="sub">- magnification<br>default 400x</div>
+        </div>
+        <div class="node">
+          <div class="nm">Centrifuge</div>
+          <div class="sub">- maxRpm<br>default 10000</div>
+        </div>
+        <div class="node">
+          <div class="nm">Spectrometer</div>
+          <div class="sub">- maxNm<br>default 1100</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="tree-label">User</div>
+      <div class="node base">
+        <div class="nm">User</div>
+        <div class="sub">- userId, name<br>- static nextUserId<br>+ getRole() = 0 &nbsp; + getMaxItems() = 0<br>+ getLoanDays() = 0 &nbsp; + getFinePerDay() = 0</div>
+      </div>
+      <div class="stem"></div>
+      <div class="children">
+        <div class="node">
+          <div class="nm">Student</div>
+          <div class="sub">- studyYear 1-3<br>max 1+year</div>
+        </div>
+        <div class="node">
+          <div class="nm">Faculty</div>
+          <div class="sub">max 5<br>14 days</div>
+        </div>
+        <div class="node">
+          <div class="nm">LabAdmin</div>
+          <div class="sub">max 10<br>30 days</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="notes">
+    <div><b>No base object</b>Every child must answer <span class="mono">getType()</span> and <span class="mono">detailLine()</span>. The base has no body for either, so <span class="mono">Equipment e;</span> cannot compile.</div>
+    <div><b>Year changes the quota</b>Student computes <span class="mono">max = 1 + studyYear</span>. Year 1 holds 2, year 2 holds 3, year 3 holds 4.</div>
+  </div>
+
+  <div class="foot"><span>Hierarchy</span><span>03</span></div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section class="slide">
+  <div class="tag"><span><b>Class relationships</b> / who owns what</span><span>Booking.h · BookingSystem.h</span></div>
+  <h2>Composition holds the lists. Association links a record.</h2>
+
+  <div class="rel-wrap">
+   <div>
+    <svg viewBox="0 0 860 430" width="100%" height="auto">
+      <defs>
+        <marker id="ah" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+          <path d="M0,0 L9,4.5 L0,9 z" fill="#16201E"/>
+        </marker>
+      </defs>
+
+      <!-- manager -->
+      <rect x="300" y="16" width="262" height="88" fill="#16201E"/>
+      <text x="431" y="48" text-anchor="middle" fill="#EDF0EE" font-family="Avenir Next Condensed" font-size="21" font-weight="700">BookingSystem</text>
+      <text x="431" y="72" text-anchor="middle" fill="#8FA39D" font-family="SF Mono, Menlo, monospace" font-size="11">stock[ ]&nbsp; users[ ]&nbsp; logs[ ]</text>
+      <text x="431" y="90" text-anchor="middle" fill="#8FA39D" font-family="SF Mono, Menlo, monospace" font-size="11">~BookingSystem() frees both</text>
+
+      <!-- tier 1 boxes -->
+      <rect x="40" y="214" width="196" height="74" fill="#E4EAE7" stroke="#16201E"/>
+      <text x="138" y="246" text-anchor="middle" font-family="Avenir Next Condensed" font-size="19" font-weight="700">Equipment</text>
+      <text x="138" y="268" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#4C5C58">vector&lt;Equipment*&gt;</text>
+
+      <rect x="306" y="214" width="196" height="74" fill="#E4EAE7" stroke="#16201E"/>
+      <text x="404" y="246" text-anchor="middle" font-family="Avenir Next Condensed" font-size="19" font-weight="700">User</text>
+      <text x="404" y="268" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#4C5C58">vector&lt;User*&gt;</text>
+
+      <rect x="572" y="214" width="196" height="74" fill="#E4EAE7" stroke="#16201E"/>
+      <text x="670" y="246" text-anchor="middle" font-family="Avenir Next Condensed" font-size="19" font-weight="700">Booking</text>
+      <text x="670" y="268" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#4C5C58">vector&lt;Booking&gt;</text>
+
+      <!-- composition -->
+      <path d="M431 104 V160 H138 V214" fill="none" stroke="#16201E" stroke-width="1.2"/>
+      <path d="M431 104 V214" fill="none" stroke="#16201E" stroke-width="1.2"/>
+      <path d="M431 104 V160 H670 V214" fill="none" stroke="#16201E" stroke-width="1.2"/>
+      <rect x="425" y="98" width="12" height="12" fill="#16201E" transform="rotate(45 431 104)"/>
+
+      <!-- association -->
+      <path d="M670 288 V356 H138 V292" fill="none" stroke="#0B6B62" stroke-width="1" stroke-dasharray="4 5" marker-end="url(#ah)"/>
+      <path d="M670 288 V330 H404 V292" fill="none" stroke="#0B6B62" stroke-width="1" stroke-dasharray="4 5" marker-end="url(#ah)"/>
+      <text x="612" y="322" text-anchor="end" fill="#0B6B62" font-family="SF Mono, Menlo, monospace" font-size="10">user id + gear id</text>
+
+      <text x="138" y="390" text-anchor="middle" font-family="American Typewriter" font-size="10" letter-spacing="1.5" fill="#4C5C58">BY ID, NOT BY POINTER</text>
+      <text x="670" y="390" text-anchor="middle" font-family="American Typewriter" font-size="10" letter-spacing="1.5" fill="#4C5C58">OPEN WHILE returnDay = -1</text>
+    </svg>
+    <div class="chain"><b>borrow()</b> checks user, gear and quota, then writes a Booking and calls markBorrowed(). One door for every rule.</div>
+  </div>
+
+    <dl class="legend">
+      <dt>Composition</dt>
+      <dd>BookingSystem owns the three lists and frees every pointer in its destructor. Kill the manager and the register dies with it.</dd>
+
+      <dt>Association</dt>
+      <dd>A Booking stores a user id and a gear id. It does not own either object, so a deleted item cannot leave a broken pointer behind.</dd>
+
+      <dt>Dependency</dt>
+      <dd>main talks only to BookingSystem. It never reaches into the vectors, so every rule passes through one door.</dd>
+    </dl>
+  </div>
+
+  <div class="foot"><span>Relationships</span><span>04</span></div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section class="slide">
+  <div class="tag"><span><b>OOP coverage</b> / where each idea lives</span><span>Files and members</span></div>
+  <h2>Every concept has a call site.</h2>
+
+  <table>
+    <tr>
+      <th>Concept</th><th>Where</th><th>What it does in this build</th>
+    </tr>
+    <tr>
+      <td class="c">Encapsulation</td>
+      <td class="w">Equipment.h<br>User.h / Booking.h</td>
+      <td>All state is private. An item can only leave the shelf through <span class="mono">markBorrowed()</span>, so no caller can set <span class="mono">available</span> by hand.</td>
+    </tr>
+    <tr>
+      <td class="c">Inheritance</td>
+      <td class="w">Equipment.h<br>User.h</td>
+      <td>Three gear types and three roles. Each child adds only its own fields and inherits the rest.</td>
+    </tr>
+    <tr>
+      <td class="c">Polymorphism</td>
+      <td class="w">detailLine()<br>getRole() / getMaxItems()</td>
+      <td><span class="mono">Equipment* e; e-&gt;detailLine()</span> prints the child line. The list code never checks the type.</td>
+    </tr>
+    <tr>
+      <td class="c">Abstraction</td>
+      <td class="w">pure virtual getType()<br>detailLine()</td>
+      <td>The base says every item must describe itself. It does not say how. No base object can exist.</td>
+    </tr>
+    <tr>
+      <td class="c">Overloading</td>
+      <td class="w">constructors<br>search() / operator&lt;&lt;</td>
+      <td><span class="mono">Microscope(n,b)</span> and <span class="mono">Microscope(n,b,mag)</span>. <span class="mono">search(word)</span> and <span class="mono">search(id)</span>.</td>
+    </tr>
+    <tr>
+      <td class="c">Statics and structs</td>
+      <td class="w">nextId counters<br>Result / GearSpec</td>
+      <td>One shared id source per class. Structs carry plain results and build specs across calls.</td>
+    </tr>
+  </table>
+
+  <div class="foot"><span>Concepts</span><span>05</span></div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section class="slide">
+  <div class="tag"><span><b>Rules</b> / enforced on every call</span><span>BookingSystem.h</span></div>
+  <h2>Quota by role, fine by day.</h2>
+
+  <div class="rule-grid">
+    <div>
+      <table>
+        <tr><th>Role</th><th>Items</th><th>Loan</th><th>Fine / day</th></tr>
+        <tr><td class="c" style="width:auto">Student, year 1</td><td class="mono">2</td><td class="mono">7</td><td class="mono">10</td></tr>
+        <tr><td class="c" style="width:auto">Student, year 2</td><td class="mono">3</td><td class="mono">7</td><td class="mono">10</td></tr>
+        <tr><td class="c" style="width:auto">Student, year 3</td><td class="mono">4</td><td class="mono">7</td><td class="mono">10</td></tr>
+        <tr><td class="c" style="width:auto">Faculty</td><td class="mono">5</td><td class="mono">14</td><td class="mono">5</td></tr>
+        <tr><td class="c" style="width:auto">LabAdmin</td><td class="mono">10</td><td class="mono">30</td><td class="mono">0</td></tr>
+      </table>
+      <p class="qtd">Quota comes from <strong>getMaxItems()</strong>. The child decides, the manager obeys.</p>
+    </div>
+
+    <div class="formula">
+      <div class="lbl">Fine</div>
+      <code>fine = (returnDay - dueDay)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x finePerDay<br><br>0 when on time</code>
+      <p class="fine-ex">Student leaves on day 1, due day 8, returns day 9. One day late at 10 per day is 10.</p>
+    </div>
+  </div>
+
+  <div class="blocked">
+    <div><b>Item already out</b><p>Borrow fails and names the holder id.</p></div>
+    <div><b>Quota reached</b><p>Borrow fails, prints held count and the role max.</p></div>
+    <div><b>Remove while out</b><p>Admin remove refuses until the item is back.</p></div>
+  </div>
+
+  <div class="foot"><span>Rules</span><span>06</span></div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section class="slide">
+  <div class="tag"><span><b>Demo path</b> / four minutes</span><span>Menu 1 to 10</span></div>
+  <h2>What we will run in class.</h2>
+
+  <div class="steps">
+    <div class="step"><div class="n">01</div><p>Login as user 1, a year 1 student.</p></div>
+    <div class="step"><div class="n">05</div><p>Jump to day 9, return 101.<span class="out">late, fine 10</span></p></div>
+    <div class="step"><div class="n">02</div><p>List gear. Three instruments, all free.</p></div>
+    <div class="step"><div class="n">06</div><p>Search "Micro", then search id 102.<span class="out">one call name, two forms</span></p></div>
+    <div class="step"><div class="n">03</div><p>Borrow 101, then try 101 again.<span class="out">TAKEN by user 1</span></p></div>
+    <div class="step"><div class="n">07</div><p>Add gear as admin with spec 0.<span class="out">short constructor runs</span></p></div>
+    <div class="step"><div class="n">04</div><p>Borrow 102, then try 103.<span class="out">quota 2 of 2 reached</span></p></div>
+    <div class="step"><div class="n">08</div><p>Show the hierarchy and the diagram.</p></div>
+  </div>
+
+  <div class="term">
+    <span class="lone c">$ ./labbook</span>
+    <div class="ln"><span>&gt; 1 login 1</span><span class="good">Priyanshu (Student year 1 max=2)</span></div>
+    <div class="ln"><span>&gt; 3 borrow 101</span><span class="good">OK, due day 8</span></div>
+    <div class="ln"><span>&gt; 3 borrow 101</span><span class="bad">FAIL: TAKEN by user 1</span></div>
+    <div class="ln"><span>&gt; 3 borrow 102</span><span class="good">OK</span></div>
+    <div class="ln"><span>&gt; 3 borrow 103</span><span class="bad">FAIL: holds 2, max is 2</span></div>
+    <div class="ln"><span>&gt; 0 (x8) then 4 return 101</span><span class="good">LATE: day 9, fine 10</span></div>
+    <div class="ln"><span>&gt; 6 search Micro</span><span class="good">1 row</span></div>
+    <div class="ln"><span>&gt; 7 search 102</span><span class="good">1 row, same function name</span></div>
+  </div>
+
+  <div class="foot"><span>Demo</span><span>07</span></div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section class="slide">
+  <div class="tag"><span><b>Build and limits</b> / what exists</span><span>main.cpp</span></div>
+  <h2>One command, no dependencies.</h2>
+
+  <div class="cols" style="gap:52px">
+    <div>
+      <pre><span class="c"># build</span>
+g++ -std=c++17 -Wall main.cpp -o labbook
+
+<span class="c"># run</span>
+./labbook</pre>
+      <p class="lede" style="font-size:15px; margin-top:20px">Five headers and one main file. Standard library only, and the build is warning free.</p>
+    </div>
+
+    <div class="limits">
+      <div>
+        <dt>In memory only</dt>
+        <dd>Gear, users and bookings reset when the process ends. No database was allowed, so none is used.</dd>
+      </div>
+      <div>
+        <dt>Manual day counter</dt>
+        <dd>Day moves with one menu key. Dates are relative, not calendar dates.</dd>
+      </div>
+      <div>
+        <dt>Next</dt>
+        <dd>Save the register to a file, and swap the day counter for real dates.</dd>
+      </div>
+    </div>
+  </div>
+
+  <div class="close">
+    <div>
+      <div class="close-lbl">Code</div>
+      <div class="close-url">github.com/vee1e/lab-booking-system</div>
+    </div>
+    <div class="close-q">Questions</div>
+  </div>
+
+  <div class="foot"><span>Build</span><span>08</span></div>
+</section>
+
+</body>
+</html>
