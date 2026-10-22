@@ -181,6 +181,40 @@ body.is-full .stage img{ border:0; }
   color:var(--teal);
   letter-spacing:.08em;
 }
+.suggest{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  padding-top:11px;
+  flex:none;
+}
+.chip{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.02em;
+  padding:7px 11px;
+  background:#fff;
+  border:1px solid var(--line);
+  color:var(--ink);
+  cursor:pointer;
+  text-align:left;
+  transition:border-color .12s, color .12s, background .12s;
+}
+.chip:hover{ border-color:var(--teal); color:var(--teal); }
+.chip.primary{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+.chip.primary:hover{ background:var(--teal); border-color:var(--teal); color:#fff; }
+.chip .n{ color:var(--soft); margin-right:6px; }
+.chip.primary .n{ color:#8FA39D; }
+.chip:disabled{ opacity:.45; cursor:default; }
+.term .step{
+  color:#6FC0B0;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  font-size:10.5px;
+  display:block;
+  margin-top:14px;
+}
+
 #input{
   flex:1;
   font-family:var(--mono);

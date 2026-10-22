@@ -7,6 +7,7 @@ C++ OOP project: book lab gear via a text menu. No database.
 * Slides and terminal: https://lab-booking-system-mu.vercel.app
 * Terminal only: https://lab-booking-system-mu.vercel.app/#shell
 * The site source is in `web/`. It is a static export of the deck plus a browser port of the same menu and rules.
+* The terminal takes clickable suggestions, and the guided flow walks every feature: login, borrow, refusal, a second user, quota, search, late fine, admin add and remove.
 
 ## Build
 

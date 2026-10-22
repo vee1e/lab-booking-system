@@ -55,18 +55,22 @@ document.querySelectorAll('.tab').forEach((tab) => {
   };
 });
 
-/* ---------- terminal ---------- */
+/* ---------- terminal state ---------- */
 const termEl = document.getElementById('term');
 const inputEl = document.getElementById('input');
 const ps1El = document.getElementById('ps1');
 const formEl = document.getElementById('entry');
+const suggestEl = document.getElementById('suggest');
 
-const MONO = 'Monospace';
+let demoRunning = false;
+let history = [];
+let hIndex = 0;
+let S;
 
 const seedGear = () => ([
-  { id: 101, kind: 'Microscope',   name: 'Olympus CX23',   brand: 'Olympus',   spec: 'mag=1000x',     available: true, count: 0 },
-  { id: 102, kind: 'Centrifuge',   name: 'Eppendorf 5424', brand: 'Eppendorf', spec: 'max=15000rpm',  available: true, count: 0 },
-  { id: 103, kind: 'Spectrometer', name: 'UV-1800',        brand: 'Shimadzu',  spec: 'range=1100nm',  available: true, count: 0 },
+  { id: 101, kind: 'Microscope',   name: 'Olympus CX23',   brand: 'Olympus',   spec: 'mag=1000x',    available: true, count: 0 },
+  { id: 102, kind: 'Centrifuge',   name: 'Eppendorf 5424', brand: 'Eppendorf', spec: 'max=15000rpm', available: true, count: 0 },
+  { id: 103, kind: 'Spectrometer', name: 'UV-1800',        brand: 'Shimadzu',  spec: 'range=1100nm', available: true, count: 0 },
 ]);
 
 const seedUsers = () => ([
@@ -76,8 +80,6 @@ const seedUsers = () => ([
   { id: 4, name: 'Gowda',      role: 'Faculty',           max: 5,  loan: 14, fine: 5  },
   { id: 5, name: 'Ansh',       role: 'LabAdmin',          max: 10, loan: 30, fine: 0  },
 ]);
-
-let S;
 
 function resetState() {
   S = {
@@ -89,12 +91,14 @@ function resetState() {
     nextGear: 104,
     gear: seedGear(),
     users: seedUsers(),
+    tmp: {},
   };
   termEl.innerHTML = '';
   print('Shared Laboratory Equipment Booking System', 'head');
-  print(`Day=1. Users: 1 Priyanshu-Y1, 2 Arjun-Y2, 3 Lakshit-Y3, 4 Gowda, 5 Ansh.`, 'dim');
+  print('Day=1. Users: 1 Priyanshu-Y1, 2 Arjun-Y2, 3 Lakshit-Y3, 4 Gowda, 5 Ansh.', 'dim');
   print('');
   showMenu();
+  renderSuggestions();
 }
 
 function print(text = '', cls = '') {
@@ -169,22 +173,6 @@ function holderOf(gearId) {
   return b ? b.user : -1;
 }
 
-function formatLine(userId, gearId) {
-  const b = S.bookings.find((x) => x.user === userId && x.gear === gearId && !x.returned);
-  if (!b) return 'FAIL: no OPEN booking for user ' + userId + ' + gear ' + gearId + '. Check menu 5 for open logs.';
-  const u = S.users.find((x) => x.id === userId);
-  const rate = u ? u.fine : 10;
-  b.returned = S.day;
-  const late = Math.max(0, S.day - b.due);
-  b.fine = late * rate;
-  const e = S.gear.find((x) => x.id === gearId);
-  if (e) e.available = true;
-  if (late > 0) {
-    return `OK but LATE: day ${S.day} is past due ${b.due}. Fine=${b.fine} (${late} ${late === 1 ? 'day' : 'days'} x ${rate}/day).`;
-  }
-  return `OK: returned on time on day ${S.day}. Due was ${b.due}. No fine.`;
-}
-
 function login(id) {
   const u = S.users.find((x) => x.id === id);
   if (!u) {
@@ -223,6 +211,26 @@ function borrow(gearId) {
   return `OK: ${u.name} took '${e.name}' [${e.kind}] on day ${S.day}. Due day ${b.due} (loan ${u.loan} days for ${u.role}).`;
 }
 
+function giveBack(gearId) {
+  const b = S.bookings.find(
+    (x) => x.user === S.login && x.gear === gearId && !x.returned
+  );
+  if (!b) {
+    return `FAIL: no OPEN booking for user ${S.login} + gear ${gearId}. Check menu 5 for open logs.`;
+  }
+  const u = S.users.find((x) => x.id === S.login);
+  const rate = u ? u.fine : 10;
+  b.returned = S.day;
+  const late = Math.max(0, S.day - b.due);
+  b.fine = late * rate;
+  const e = S.gear.find((x) => x.id === gearId);
+  if (e) e.available = true;
+  if (late > 0) {
+    return `OK but LATE: day ${S.day} is past due ${b.due}. Fine=${b.fine} (${late} ${late === 1 ? 'day' : 'days'} x ${rate}/day).`;
+  }
+  return `OK: returned on time on day ${S.day}. Due was ${b.due}. No fine.`;
+}
+
 function searchWord(k) {
   print(`--- search word '${k}' ---`, 'dim');
   const key = k.toLowerCase();
@@ -241,7 +249,7 @@ function searchId(id) {
 }
 
 function addGear(kind, name, brand, value) {
-  const k = kind.toLowerCase();
+  const k = String(kind).toLowerCase();
   const defaults = { microscope: 400, centrifuge: 10000, spectrometer: 1100 };
   if (!(k in defaults)) {
     return `FAIL: kind must be microscope, centrifuge, or spectrometer. Got '${kind}'.`;
@@ -271,9 +279,9 @@ function removeGear(id) {
   return `OK: removed id ${id} ('${name}').`;
 }
 
-/* input handling mirrors the C++ menu order */
+/* ---------- menu handling ---------- */
 function handle(line) {
-  const v = line.trim();
+  const v = String(line).trim();
   if (S.mode === 'done') {
     if (v.toLowerCase() === 'restart' || v === '-1') resetState();
     else print('Session ended. Press Restart to begin again.', 'dim');
@@ -338,7 +346,7 @@ function handle(line) {
     case 'return': {
       const n = Number(v);
       if (!Number.isFinite(n)) { print(`FAIL: bad id '${v}'.`, 'bad'); return showMenu(); }
-      const msg = formatLine(S.login, n);
+      const msg = giveBack(n);
       print(msg, classify(msg));
       return showMenu();
     }
@@ -384,20 +392,149 @@ function handle(line) {
   }
 }
 
-let demoRunning = false;
-let history = [];
-let hIndex = 0;
+/* ---------- suggestions ---------- */
+function buildSuggestions() {
+  if (S.mode === 'done') return [{ key: '', label: 'Restart', value: '__restart__' }];
+
+  if (S.mode === 'menu') {
+    const out = [{ key: '', label: 'Guided flow', value: '__demo__', primary: true }];
+    if (S.login === null) {
+      out.push({ key: '1', label: 'Login', value: '1' });
+    } else {
+      out.push({ key: '3', label: 'Borrow', value: '3' });
+      out.push({ key: '4', label: 'Return', value: '4' });
+    }
+    out.push({ key: '2', label: 'List gear', value: '2' });
+    out.push({ key: '5', label: 'Logs', value: '5' });
+    out.push({ key: '6', label: 'Search', value: '6' });
+    out.push({ key: '0', label: 'Next day', value: '0' });
+    if (S.login !== null) out.push({ key: '1', label: 'Switch user', value: '1' });
+    const u = S.users.find((x) => x.id === S.login);
+    if (u && u.role === 'LabAdmin') {
+      out.push({ key: '9', label: 'Add gear', value: '9' });
+      out.push({ key: '10', label: 'Remove gear', value: '10' });
+    }
+    return out;
+  }
+
+  if (S.mode === 'login') {
+    return S.users.map((u) => ({
+      key: String(u.id),
+      label: `${u.name} (${u.role === 'Student' ? 'year ' + u.year : u.role})`,
+      value: String(u.id),
+    }));
+  }
+
+  if (S.mode === 'borrow') {
+    const free = S.gear.filter((g) => g.available);
+    if (!free.length) return [];
+    return free.map((g) => ({
+      key: String(g.id),
+      label: `${g.name} (${g.kind})`,
+      value: String(g.id),
+    }));
+  }
+
+  if (S.mode === 'return') {
+    const open = S.bookings.filter((b) => b.user === S.login && !b.returned);
+    return open.map((b) => {
+      const g = S.gear.find((x) => x.id === b.gear);
+      return {
+        key: String(b.gear),
+        label: `${g ? g.name : 'item'} (due day ${b.due})`,
+        value: String(b.gear),
+      };
+    });
+  }
+
+  if (S.mode === 'searchw') {
+    return ['Micro', 'Centri', 'Shimadzu'].map((k) => ({ key: '', label: k, value: k }));
+  }
+
+  if (S.mode === 'searchid') {
+    return S.gear.slice(0, 3).map((g) => ({
+      key: String(g.id),
+      label: g.name,
+      value: String(g.id),
+    }));
+  }
+
+  if (S.mode === 'addkind') {
+    return ['microscope', 'centrifuge', 'spectrometer'].map((k) => ({
+      key: '',
+      label: k,
+      value: k,
+    }));
+  }
+  if (S.mode === 'addname') return [{ key: '', label: 'DemoScope', value: 'DemoScope' }];
+  if (S.mode === 'addbrand') return [{ key: '', label: 'Demo', value: 'Demo' }];
+  if (S.mode === 'addspec') {
+    return [
+      { key: '0', label: 'default', value: '0' },
+      { key: '', label: '1000', value: '1000' },
+    ];
+  }
+
+  if (S.mode === 'remove') {
+    return S.gear.filter((g) => g.available).map((g) => ({
+      key: String(g.id),
+      label: g.name,
+      value: String(g.id),
+    }));
+  }
+
+  return [];
+}
+
+function renderSuggestions() {
+  suggestEl.innerHTML = '';
+  if (demoRunning) {
+    const span = document.createElement('span');
+    span.className = 'chip';
+    span.style.opacity = '.55';
+    span.textContent = 'Running the guided flow...';
+    suggestEl.appendChild(span);
+    return;
+  }
+  buildSuggestions().forEach((s) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip' + (s.primary ? ' primary' : '');
+    if (s.key) {
+      const k = document.createElement('span');
+      k.className = 'n';
+      k.textContent = s.key;
+      b.appendChild(k);
+    }
+    b.appendChild(document.createTextNode(s.label));
+    b.onclick = () => runValue(s.value);
+    suggestEl.appendChild(b);
+  });
+}
+
+function submitValue(raw) {
+  const v = String(raw);
+  if (!v.trim()) return;
+  history.push(v);
+  hIndex = history.length;
+  print(`${ps1El.textContent} ${v}`, 'cmd');
+  handle(v);
+  renderSuggestions();
+}
+
+function runValue(v) {
+  if (demoRunning) return;
+  if (v === '__demo__') return runFlow();
+  if (v === '__restart__') return resetState();
+  submitValue(v);
+}
 
 formEl.addEventListener('submit', (e) => {
   e.preventDefault();
   if (demoRunning) return;
   const v = inputEl.value;
   inputEl.value = '';
-  if (!v.trim()) return;
-  history.push(v);
-  hIndex = history.length;
-  print(`${ps1El.textContent} ${v}`, 'cmd');
-  handle(v);
+  submitValue(v);
 });
 
 inputEl.addEventListener('keydown', (e) => {
@@ -413,47 +550,80 @@ inputEl.addEventListener('keydown', (e) => {
 });
 
 document.getElementById('reset').onclick = () => {
+  if (demoRunning) return;
   resetState();
   inputEl.focus();
 };
 
-const DEMO = [
-  '1', '1', '2',
-  '3', '101',
-  '3', '101',
-  '3', '102',
-  '3', '103',
-  '0', '0', '0', '0', '0', '0', '0', '0',
-  '4', '101',
-  '5',
+/* ---------- guided flow ---------- */
+const FLOW = [
+  { label: 'Login as Priyanshu, a year 1 student', cmds: ['1', '1'] },
+  { label: 'Show what is on the shelf', cmds: ['2'] },
+  { label: 'Borrow the microscope 101', cmds: ['3', '101'] },
+  { label: 'Try the same item again', cmds: ['3', '101'] },
+  { label: 'Switch to another student, Arjun', cmds: ['1', '2'] },
+  { label: 'Arjun tries the same item', cmds: ['3', '101'] },
+  { label: 'Switch back to Priyanshu', cmds: ['1', '1'] },
+  { label: 'Borrow a second item, 102', cmds: ['3', '102'] },
+  { label: 'Try a third item, 103', cmds: ['3', '103'] },
+  { label: 'Search by word', cmds: ['6', 'Micro'] },
+  { label: 'Search by id', cmds: ['7', '102'] },
+  { label: 'List the people', cmds: ['8'] },
+  { label: 'Move eight days ahead', cmds: ['0', '0', '0', '0', '0', '0', '0', '0'] },
+  { label: 'Return 101 after the due day', cmds: ['4', '101'] },
+  { label: 'Show the booking log', cmds: ['5'] },
+  { label: 'Switch to the lab admin', cmds: ['1', '5'] },
+  { label: 'Add a new instrument', cmds: ['9', 'microscope', 'DemoScope', 'Demo', '0'] },
+  { label: 'Remove it again', cmds: ['10', '104'] },
+  { label: 'Exit', cmds: ['-1'] },
 ];
 
-document.getElementById('demo').onclick = () => {
+function runFlow() {
   if (demoRunning) return;
   demoRunning = true;
   resetState();
+  renderSuggestions();
   let i = 0;
-  const step = () => {
-    if (i >= DEMO.length) {
+
+  const nextStep = () => {
+    if (i >= FLOW.length) {
       demoRunning = false;
+      renderSuggestions();
       inputEl.focus();
       return;
     }
-    const v = DEMO[i++];
-    print(`${ps1El.textContent} ${v}`, 'cmd');
-    handle(v);
-    termEl.scrollTop = termEl.scrollHeight;
-    setTimeout(step, 520);
+    const step = FLOW[i];
+    print(`step ${i + 1} / ${FLOW.length} · ${step.label}`, 'step');
+    i += 1;
+
+    let j = 0;
+    const nextCmd = () => {
+      if (j >= step.cmds.length) {
+        setTimeout(nextStep, 240);
+        return;
+      }
+      const v = step.cmds[j];
+      j += 1;
+      print(`${ps1El.textContent} ${v}`, 'cmd');
+      handle(v);
+      termEl.scrollTop = termEl.scrollHeight;
+      setTimeout(nextCmd, 260);
+    };
+    nextCmd();
   };
-  setTimeout(step, 350);
-};
+
+  setTimeout(nextStep, 300);
+}
+
+document.getElementById('demo').onclick = () => runFlow();
 
 /* boot */
 resetState();
+renderSuggestions();
 showSlide(0);
 const hash = location.hash.replace('#', '');
 if (hash === 'shell' || hash === 'slides') activate(hash);
 if (hash === 'shell-demo') {
   activate('shell');
-  setTimeout(() => document.getElementById('demo').click(), 200);
+  setTimeout(() => runFlow(), 300);
 }

@@ -40,13 +40,14 @@
   <section id="view-shell" class="view">
     <div class="shell-wrap">
       <div class="term" id="term" aria-live="polite"></div>
+      <div class="suggest" id="suggest" aria-label="Suggested inputs"></div>
       <form class="entry" id="entry">
         <span class="ps1" id="ps1">pick:</span>
         <input id="input" autocomplete="off" spellcheck="false" aria-label="Type a menu number and press Enter">
-        <button type="button" id="demo" class="small">Run demo</button>
+        <button type="button" id="demo" class="small">Guided flow</button>
         <button type="button" id="reset" class="small">Restart</button>
       </form>
-      <div class="note">Browser port of the C++ build. Same menu, same rules, same messages. Data resets on reload.</div>
+      <div class="note">Click a suggestion or type. Guided flow runs every feature in order. Data resets on reload.</div>
     </div>
   </section>
 </main>
