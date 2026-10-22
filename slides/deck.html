@@ -226,6 +226,35 @@
   .card p{ font-size:13.5px; line-height:1.45; color:var(--soft); }
   .card.wide{ grid-column:span 1; }
 
+  /* ---------- code slide ---------- */
+  .codegrid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; grid-auto-rows:1fr; }
+  .codepanel{
+    border:1px solid var(--ink);
+    background:rgba(255,255,255,.55);
+    display:flex; flex-direction:column;
+    min-height:0;
+  }
+  .codepanel pre{
+    background:var(--ink); color:#E8EDEA;
+    font-family:"SF Mono",Menlo,monospace;
+    font-size:10.5px; line-height:1.42;
+    padding:11px 15px;
+    flex:1;
+    margin:0;
+    white-space:pre;
+    overflow:hidden;
+  }
+  .codepanel .why{ padding:8px 15px 10px; }
+  .codepanel .why b{
+    display:block;
+    font-family:"Avenir Next Condensed","Avenir Next",sans-serif;
+    font-size:18px; letter-spacing:-.005em; margin-bottom:3px;
+  }
+  .codepanel .why span{ font-size:12.5px; line-height:1.38; color:var(--soft); }
+  .codepanel .k{ color:#6FC0B0; }
+  .codepanel .c{ color:#8FA39D; }
+  .codepanel .s{ color:#E0B070; }
+
   /* ---------- 6 bars ---------- */
   .rules{ display:grid; grid-template-columns:1fr 1fr; gap:56px; }
   .bar-row{ display:grid; grid-template-columns:150px 1fr 34px; gap:12px; align-items:center; margin-bottom:16px; }
@@ -329,10 +358,9 @@
   }
 
   /* 5 */
-  section.slide:nth-of-type(5) .cards{ grid-template-columns:1fr 1fr; gap:18px; }
-  section.slide:nth-of-type(5) .card{ min-height:138px; padding:22px 26px; }
-  section.slide:nth-of-type(5) .card .nm{ font-size:24px; }
-  section.slide:nth-of-type(5) .card p{ font-size:15px; }
+  section.slide:nth-of-type(5) .note{
+    position:absolute; left:72px; right:72px; bottom:76px; margin:0;
+  }
 
   /* 6 */
   section.slide:nth-of-type(6) .finerule svg{
@@ -581,33 +609,66 @@
 
 <!-- ============ 5 ============ -->
 <section class="slide">
-  <div class="tag"><span><b>OOP ideas</b></span><span>Six, each used in the code</span></div>
-  <h2>Where each idea shows up.</h2>
+  <div class="tag"><span><b>OOP ideas</b></span><span>Four principles, four snippets</span></div>
+  <h2>Four ideas, four snippets.</h2>
 
-  <div class="cards">
-    <div class="card">
-      <div class="nm">Encapsulation</div>
-      <p>An instrument changes state only through borrow and return. Nothing outside sets it by hand.</p>
+  <div class="codegrid">
+    <div class="codepanel">
+      <pre><span class="k">class</span> Equipment {
+<span class="k">private</span>:
+    <span class="k">int</span> id;
+    <span class="k">bool</span> available;      <span class="c">// hidden</span>
+<span class="k">public</span>:
+    <span class="k">bool</span> isAvailable() <span class="k">const</span>;
+    <span class="k">void</span> markBorrowed();  <span class="c">// only way</span>
+};</pre>
+      <div class="why">
+        <b>Encapsulation</b>
+        <span>State is private. Only borrow and return change it.</span>
+      </div>
     </div>
-    <div class="card">
-      <div class="nm">Inheritance</div>
-      <p>Two bases, six types. Shared fields are written once in the base.</p>
+
+    <div class="codepanel">
+      <pre><span class="k">class</span> Equipment {
+<span class="k">public</span>:
+    <span class="k">virtual</span> std::string getType() <span class="k">const</span> = 0;
+};
+
+<span class="k">class</span> Microscope : <span class="k">public</span> Equipment {
+    std::string getType() <span class="k">const override</span>
+    { <span class="k">return</span> <span class="s">"Microscope"</span>; }
+};</pre>
+      <div class="why">
+        <b>Inheritance and abstraction</b>
+        <span>One base, three children. The pure virtual method forces each child to answer.</span>
+      </div>
     </div>
-    <div class="card">
-      <div class="nm">Polymorphism</div>
-      <p>One list call prints every instrument in its own format. The list never checks the type.</p>
+
+    <div class="codepanel">
+      <pre>std::vector&lt;Equipment*&gt; stock;
+stock.push_back(<span class="k">new</span> Microscope(<span class="s">"CX23"</span>, <span class="s">"Olympus"</span>, 1000));
+
+<span class="k">for</span> (Equipment* e : stock)
+    std::cout &lt;&lt; e-&gt;detailLine();  <span class="c">// child line</span></pre>
+      <div class="why">
+        <b>Polymorphism</b>
+        <span>A base pointer calls the child version. The loop never checks the type.</span>
+      </div>
     </div>
-    <div class="card">
-      <div class="nm">Abstraction</div>
-      <p>The base says what every item must do. It leaves the details to the child.</p>
-    </div>
-    <div class="card">
-      <div class="nm">Overloading</div>
-      <p>Search works by word or by id, under the same name. Constructors come in two forms.</p>
-    </div>
-    <div class="card">
-      <div class="nm">Shared ids</div>
-      <p>Each class counts its own records, so every new item, person and booking gets the next number.</p>
+
+    <div class="codepanel">
+      <pre>Microscope(<span class="k">const</span> std::string&amp; n, <span class="k">const</span> std::string&amp; b, <span class="k">int</span> mag);
+Microscope(<span class="k">const</span> std::string&amp; n, <span class="k">const</span> std::string&amp; b);
+
+<span class="k">void</span> search(<span class="k">const</span> std::string&amp; word);
+<span class="k">void</span> search(<span class="k">int</span> id);
+
+<span class="c">// Microscope("CX23", "Olympus")       400x</span>
+<span class="c">// Microscope("CX23", "Olympus", 1000) 1000x</span></pre>
+      <div class="why">
+        <b>Overloading</b>
+        <span>Same name, different inputs. The compiler picks one before the run.</span>
+      </div>
     </div>
   </div>
 

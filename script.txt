@@ -35,19 +35,17 @@ Arjun will cover the OOP ideas and the rules."
 
 4:20-6:50  ARJUN  (slides 5-6)
 
-"Six ideas sit in the code, and each one does a job.
+"Four ideas are on this slide, each with the code that uses it.
 
-Encapsulation: an instrument changes state only through borrow and return. Nothing outside can set it free by hand.
+Encapsulation: state is private, and only borrow and return change it.
 
-Inheritance: two bases, six types. Shared fields are written once.
+Inheritance and abstraction: one base, three children. The pure virtual method leaves no base object, and every child has to answer.
 
-Polymorphism: one list call prints every instrument in its own format. The list never checks the type.
+Polymorphism: a base pointer calls the child version. The loop never checks the type.
 
-Abstraction: the base says what every item must do, not how.
+Overloading: two constructors and two search functions under one name. The compiler picks one.
 
-Overloading: search works by word and by id under one name. The constructors also come in two forms.
-
-Shared ids: each class counts its own records, so every new item, person and booking gets the next number.
+The build also uses shared id counters and two small structs.
 
 Now the rules. A first year student holds 2 items, second year 3, third year 4, faculty 5, lab admin 10. A student keeps an item for 7 days, faculty 14, admin 30. A late day costs 10 for a student, 5 for faculty, nothing for the admin.
 
