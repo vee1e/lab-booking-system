@@ -15,12 +15,21 @@ void clearScreen() {
 }
 
 // Read int + eat rest of line.
+// Bad input (letters, symbols) is rejected and asked again instead of
+// leaving cin in a failed state, which used to loop or crash.
 int readInt(const std::string& msg) {
     int v;
-    std::cout << msg;
-    std::cin >> v;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    return v;
+    while (true) {
+        std::cout << msg;
+        if (std::cin >> v) {
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            return v;
+        }
+        if (std::cin.eof()) return -1;  // input closed, leave the menu
+        std::cin.clear();              // drop the fail flag
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "FAIL: that is not a number. Type digits only, for example 2.\n";
+    }
 }
 
 // Read full line.

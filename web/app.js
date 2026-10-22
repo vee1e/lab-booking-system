@@ -62,7 +62,6 @@ const ps1El = document.getElementById('ps1');
 const formEl = document.getElementById('entry');
 const suggestEl = document.getElementById('suggest');
 
-let demoRunning = false;
 let history = [];
 let hIndex = 0;
 let S;
@@ -377,7 +376,11 @@ function handle(line) {
     }
     case 'addspec': {
       const n = Number(v);
-      const msg = addGear(S.tmp.kind, S.tmp.name, S.tmp.brand, Number.isFinite(n) ? n : 0);
+      if (!Number.isFinite(n)) {
+        print(`FAIL: that is not a number. Type digits only, for example 0.`, 'bad');
+        return showMenu();
+      }
+      const msg = addGear(S.tmp.kind, S.tmp.name, S.tmp.brand, n);
       print(msg, classify(msg));
       return showMenu();
     }
@@ -397,7 +400,7 @@ function buildSuggestions() {
   if (S.mode === 'done') return [{ key: '', label: 'Restart', value: '__restart__' }];
 
   if (S.mode === 'menu') {
-    const out = [{ key: '', label: 'Guided flow', value: '__demo__', primary: true }];
+    const out = [];
     if (S.login === null) {
       out.push({ key: '1', label: 'Login', value: '1' });
     } else {
@@ -488,14 +491,6 @@ function buildSuggestions() {
 
 function renderSuggestions() {
   suggestEl.innerHTML = '';
-  if (demoRunning) {
-    const span = document.createElement('span');
-    span.className = 'chip';
-    span.style.opacity = '.55';
-    span.textContent = 'Running the guided flow...';
-    suggestEl.appendChild(span);
-    return;
-  }
   buildSuggestions().forEach((s) => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -523,15 +518,12 @@ function submitValue(raw) {
 }
 
 function runValue(v) {
-  if (demoRunning) return;
-  if (v === '__demo__') return runFlow();
   if (v === '__restart__') return resetState();
   submitValue(v);
 }
 
 formEl.addEventListener('submit', (e) => {
   e.preventDefault();
-  if (demoRunning) return;
   const v = inputEl.value;
   inputEl.value = '';
   submitValue(v);
@@ -550,72 +542,11 @@ inputEl.addEventListener('keydown', (e) => {
 });
 
 document.getElementById('reset').onclick = () => {
-  if (demoRunning) return;
   resetState();
   inputEl.focus();
 };
 
-/* ---------- guided flow ---------- */
-const FLOW = [
-  { label: 'Login as Priyanshu, a year 1 student', cmds: ['1', '1'] },
-  { label: 'Show what is on the shelf', cmds: ['2'] },
-  { label: 'Borrow the microscope 101', cmds: ['3', '101'] },
-  { label: 'Try the same item again', cmds: ['3', '101'] },
-  { label: 'Switch to another student, Arjun', cmds: ['1', '2'] },
-  { label: 'Arjun tries the same item', cmds: ['3', '101'] },
-  { label: 'Switch back to Priyanshu', cmds: ['1', '1'] },
-  { label: 'Borrow a second item, 102', cmds: ['3', '102'] },
-  { label: 'Try a third item, 103', cmds: ['3', '103'] },
-  { label: 'Search by word', cmds: ['6', 'Micro'] },
-  { label: 'Search by id', cmds: ['7', '102'] },
-  { label: 'List the people', cmds: ['8'] },
-  { label: 'Move eight days ahead', cmds: ['0', '0', '0', '0', '0', '0', '0', '0'] },
-  { label: 'Return 101 after the due day', cmds: ['4', '101'] },
-  { label: 'Show the booking log', cmds: ['5'] },
-  { label: 'Switch to the lab admin', cmds: ['1', '5'] },
-  { label: 'Add a new instrument', cmds: ['9', 'microscope', 'DemoScope', 'Demo', '0'] },
-  { label: 'Remove it again', cmds: ['10', '104'] },
-  { label: 'Exit', cmds: ['-1'] },
-];
 
-function runFlow() {
-  if (demoRunning) return;
-  demoRunning = true;
-  resetState();
-  renderSuggestions();
-  let i = 0;
-
-  const nextStep = () => {
-    if (i >= FLOW.length) {
-      demoRunning = false;
-      renderSuggestions();
-      inputEl.focus();
-      return;
-    }
-    const step = FLOW[i];
-    print(`step ${i + 1} / ${FLOW.length} · ${step.label}`, 'step');
-    i += 1;
-
-    let j = 0;
-    const nextCmd = () => {
-      if (j >= step.cmds.length) {
-        setTimeout(nextStep, 240);
-        return;
-      }
-      const v = step.cmds[j];
-      j += 1;
-      print(`${ps1El.textContent} ${v}`, 'cmd');
-      handle(v);
-      termEl.scrollTop = termEl.scrollHeight;
-      setTimeout(nextCmd, 260);
-    };
-    nextCmd();
-  };
-
-  setTimeout(nextStep, 300);
-}
-
-document.getElementById('demo').onclick = () => runFlow();
 
 /* boot */
 resetState();
@@ -623,7 +554,3 @@ renderSuggestions();
 showSlide(0);
 const hash = location.hash.replace('#', '');
 if (hash === 'shell' || hash === 'slides') activate(hash);
-if (hash === 'shell-demo') {
-  activate('shell');
-  setTimeout(() => runFlow(), 300);
-}
