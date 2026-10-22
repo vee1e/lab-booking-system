@@ -2,3 +2,5 @@ labbook
 *.o
 .DS_Store
 slides/png/
+web/.vercel
+.vercel

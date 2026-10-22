@@ -106,14 +106,14 @@ public:
                 if (b.getFine() > 0)
                     return {true, "OK but LATE: day " + std::to_string(today) + " is past due " +
                                    std::to_string(b.getDueDay()) + ". Fine=" + std::to_string(b.getFine()) +
-                                   " (" + std::to_string(today - b.getDueDay()) + " days x " +
+                                   " (" + std::to_string(today - b.getDueDay()) + (today - b.getDueDay() == 1 ? " day x " : " days x ") +
                                    std::to_string(rate) + "/day)."};
                 return {true, "OK: returned on time on day " + std::to_string(today) +
                                ". Due was " + std::to_string(b.getDueDay()) + ". No fine."};
             }
         }
         return {false, "FAIL: no OPEN booking for user " + std::to_string(userId) +
-                       " + gear " + std::to_string(eqId) + ". Check menu 8 for open logs."};
+                       " + gear " + std::to_string(eqId) + ". Check menu 5 for open logs."};
     }
 
     // Shared list shape: header with count, empty note, one line each.

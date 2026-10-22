@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Equipment Booking System</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316201E'/%3E%3Crect x='8' y='8' width='16' height='16' fill='none' stroke='%230B6B62' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="brand">
+    <span class="mark"></span>
+    <span class="name">Shared Laboratory Equipment Booking System</span>
+    <span class="meta">IA3 / OOPs in C++</span>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab is-on" data-view="slides" role="tab" aria-selected="true">Slides</button>
+    <button class="tab" data-view="shell" role="tab" aria-selected="false">Terminal</button>
+    <a class="ghost" href="presentation.pdf" download>Download PDF</a>
+    <a class="ghost" href="https://github.com/vee1e/lab-booking-system" target="_blank" rel="noopener">Source</a>
+  </nav>
+</header>
+
+<main>
+  <section id="view-slides" class="view is-on">
+    <div class="stage" id="stage">
+      <img id="slide" src="slides/slide1.png" alt="Slide 1">
+    </div>
+    <div class="controls">
+      <button id="prev" aria-label="Previous slide">←</button>
+      <span id="count" class="count">1 / 8</span>
+      <button id="next" aria-label="Next slide">→</button>
+      <span class="hint">Arrow keys to move. F for full screen.</span>
+      <button id="full" class="small">Full screen</button>
+    </div>
+  </section>
+
+  <section id="view-shell" class="view">
+    <div class="shell-wrap">
+      <div class="term" id="term" aria-live="polite"></div>
+      <form class="entry" id="entry">
+        <span class="ps1" id="ps1">pick:</span>
+        <input id="input" autocomplete="off" spellcheck="false" aria-label="Type a menu number and press Enter">
+        <button type="button" id="demo" class="small">Run demo</button>
+        <button type="button" id="reset" class="small">Restart</button>
+      </form>
+      <div class="note">Browser port of the C++ build. Same menu, same rules, same messages. Data resets on reload.</div>
+    </div>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
