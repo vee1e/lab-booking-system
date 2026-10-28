@@ -26,6 +26,15 @@ g++ -std=c++17 -Wall main.cpp -o labbook
   --print-to-pdf=slides/deck.pdf slides/deck.html
 ```
 
+## Report
+
+`report/report.pdf` is the two page IA3 report. Source is `report/report.tex`. Rebuild with:
+
+```
+cd report
+xelatex report.tex
+```
+
 ## Files
 
 * `Equipment.h` - Equipment base plus Microscope, Centrifuge, Spectrometer
